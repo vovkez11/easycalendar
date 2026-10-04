@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="description" content="A focused, private habit tracker with streaks, notes, analytics and local backups." />
+  <title>Streakline — Habit Calendar</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="habit-mark" id="habitIcon" aria-hidden="true">⚡</div>
+        <div>
+          <p class="eyebrow">YOUR DAILY SYSTEM</p>
+          <h1 id="habitTitle">Build the streak</h1>
+        </div>
+      </div>
+      <button class="icon-button" id="settingsBtn" type="button" aria-label="Open settings" title="Settings">⚙</button>
+    </header>
+
+    <section class="hero-card" aria-label="Current progress">
+      <div class="hero-copy">
+        <span class="status-pill" id="todayStatus">Not checked in yet</span>
+        <h2><span id="currentStreak">0</span><small> day streak</small></h2>
+        <p id="streakMessage">One check-in is all it takes to start.</p>
+      </div>
+      <div class="level-panel" aria-label="Level progress">
+        <div class="level-row"><span>Level <strong id="userLevel">1</strong></span><span id="xpText">0 / 100 XP</span></div>
+        <div class="progress-track"><div class="progress-fill" id="xpBar"></div></div>
+      </div>
+    </section>
+
+    <section class="quick-stats" aria-label="Habit statistics">
+      <button class="stat-tile" id="weeklyTile" type="button">
+        <span class="stat-label">This week</span>
+        <strong id="weeklyCompletion">0%</strong>
+        <span class="stat-caption" id="weeklyTargetText">0 / 5 target</span>
+      </button>
+      <button class="stat-tile" id="rateTile" type="button">
+        <span class="stat-label">Consistency</span>
+        <strong id="completionRate">0%</strong>
+        <span class="stat-caption">Since you started</span>
+      </button>
+      <button class="stat-tile" id="badgesTile" type="button">
+        <span class="stat-label">Achievements</span>
+        <strong id="badgesEarned">0</strong>
+        <span class="stat-caption">Unlocked badges</span>
+      </button>
+    </section>
+
+    <main class="calendar-card">
+      <div class="calendar-toolbar">
+        <button class="nav-button" id="prevMonth" type="button" aria-label="Previous month">←</button>
+        <button class="month-jump" id="todayBtn" type="button" title="Jump to today">
+          <strong id="currentMonth">October 2026</strong>
+          <span>Tap to return to today</span>
+        </button>
+        <button class="nav-button" id="nextMonth" type="button" aria-label="Next month">→</button>
+      </div>
+
+      <div class="weekday-row" id="weekdayRow" aria-hidden="true"></div>
+      <div class="calendar-grid" id="calendar" aria-label="Habit calendar"></div>
+
+      <div class="calendar-legend">
+        <span><i class="legend-dot complete"></i> Completed</span>
+        <span><i class="legend-dot today"></i> Today</span>
+        <span><i class="legend-dot note"></i> Note</span>
+      </div>
+    </main>
+
+    <section class="mission-card" id="missionCard">
+      <div>
+        <p class="eyebrow">WEEKLY TARGET</p>
+        <h3 id="missionTitle">Keep your rhythm</h3>
+        <p id="missionText">0 of 5 check-ins complete this week.</p>
+      </div>
+      <div class="mission-meter" aria-hidden="true"><div id="missionBar"></div></div>
+    </section>
+
+    <div class="primary-actions">
+      <button class="primary-button" id="checkInBtn" type="button">✓ Check in today</button>
+      <button class="secondary-button" id="statsBtn" type="button">View insights</button>
+    </div>
+
+    <p class="privacy-note">Your data stays in this browser unless you export it.</p>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <div class="modal" id="dayModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="dayModal"></div>
+    <section class="modal-card compact" role="dialog" aria-modal="true" aria-labelledby="dayModalTitle">
+      <button class="modal-close" type="button" data-close="dayModal" aria-label="Close">×</button>
+      <p class="eyebrow">DAY DETAILS</p>
+      <h2 id="dayModalTitle">Day details</h2>
+      <label class="field-label" for="dayNote">Note <span>optional</span></label>
+      <textarea id="dayNote" maxlength="280" rows="5" placeholder="What helped today? What got in the way?"></textarea>
+      <div class="modal-actions split">
+        <button class="secondary-button" id="dayToggleBtn" type="button">Mark complete</button>
+        <button class="primary-button" id="saveDayBtn" type="button">Save</button>
+      </div>
+    </section>
+  </div>
+
+  <div class="modal" id="analyticsModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="analyticsModal"></div>
+    <section class="modal-card wide" role="dialog" aria-modal="true" aria-labelledby="analyticsTitle">
+      <button class="modal-close" type="button" data-close="analyticsModal" aria-label="Close">×</button>
+      <p class="eyebrow">INSIGHTS</p>
+      <h2 id="analyticsTitle">Your consistency, at a glance</h2>
+      <div class="insight-grid" id="insightGrid"></div>
+      <h3 class="section-heading">Last 12 months</h3>
+      <div class="bars" id="yearBars" aria-label="Monthly completions"></div>
+      <p class="chart-footnote">Bars show completed days per month. No account or cloud connection required.</p>
+    </section>
+  </div>
+
+  <div class="modal" id="achievementsModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="achievementsModal"></div>
+    <section class="modal-card wide" role="dialog" aria-modal="true" aria-labelledby="achievementTitle">
+      <button class="modal-close" type="button" data-close="achievementsModal" aria-label="Close">×</button>
+      <p class="eyebrow">MILESTONES</p>
+      <h2 id="achievementTitle">Achievements</h2>
+      <div class="achievement-grid" id="achievementsGrid"></div>
+    </section>
+  </div>
+
+  <div class="modal" id="settingsModal" aria-hidden="true">
+    <div class="modal-backdrop" data-close="settingsModal"></div>
+    <section class="modal-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <button class="modal-close" type="button" data-close="settingsModal" aria-label="Close">×</button>
+      <p class="eyebrow">SETTINGS</p>
+      <h2 id="settingsTitle">Make it yours</h2>
+
+      <div class="form-grid">
+        <label>
+          <span>Habit name</span>
+          <input id="habitNameInput" maxlength="42" placeholder="Build the streak" />
+        </label>
+        <label>
+          <span>Icon</span>
+          <input id="habitIconInput" maxlength="4" placeholder="⚡" />
+        </label>
+        <label>
+          <span>Weekly target</span>
+          <select id="weeklyTargetInput">
+            <option value="1">1 day</option><option value="2">2 days</option><option value="3">3 days</option>
+            <option value="4">4 days</option><option value="5">5 days</option><option value="6">6 days</option><option value="7">7 days</option>
+          </select>
+        </label>
+        <label>
+          <span>Week starts</span>
+          <select id="weekStartInput"><option value="1">Monday</option><option value="0">Sunday</option></select>
+        </label>
+      </div>
+
+      <label class="toggle-row">
+        <span><strong>Celebrations</strong><small>Show a small success animation after check-in.</small></span>
+        <input id="celebrationsInput" type="checkbox" />
+      </label>
+
+      <div class="modal-actions">
+        <button class="primary-button" id="saveSettingsBtn" type="button">Save settings</button>
+      </div>
+
+      <div class="settings-divider"></div>
+      <h3 class="section-heading">Your data</h3>
+      <div class="data-actions">
+        <button class="secondary-button" id="exportBtn" type="button">Export backup</button>
+        <button class="secondary-button" id="importBtn" type="button">Import backup</button>
+        <button class="danger-button" id="resetBtn" type="button">Reset all data</button>
+        <input id="importFile" type="file" accept="application/json,.json" hidden />
+      </div>
+      <p class="settings-help">Export a JSON backup before clearing browser storage or moving devices.</p>
+    </section>
+  </div>
+
+  <div class="celebration" id="celebration" aria-hidden="true">
+    <div class="celebration-burst">✓</div>
+    <strong id="celebrationText">Checked in</strong>
+  </div>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
